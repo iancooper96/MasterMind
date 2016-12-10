@@ -1,12 +1,193 @@
-*.class
+import java.util.Scanner;
+import java.util.ArrayList;
+import java.io.File;
+import java.io.PrintWriter;
+import java.util.Random;
+import java.io.IOException;
+/*
+You can try implementing a system where the computer picks a pattern
+(a 4-digit number, each digit between 1 and 6, repetitions are
+allowed) and when you guess the computer provides feedback.
 
-# Mobile Tools for Java (J2ME)
-.mtj.tmp/
+<   http://www.web-games-online.com/mastermind/index.php    >
+ */
 
-# Package Files #
-*.jar
-*.war
-*.ear
+/**
+ *
+ * @author iancooper
+ */
+public class mastermind {
+   
+    public static int[] generateCode(int size)  {
+        Random rand = new Random();
+        int[] code = new int[size];
+        int min = 1;
+        int max = 6;
+        
+        for(int i = 0; i < size; i++)   {
+            int randomNum = rand.nextInt((max - min) + 1) + min;
+            code[i] = randomNum;
+        }
+        
+        return code;
+    }
+    
+    public static int[] makeGuesses(int size, String[][] data, int guessNum)   {
+        Scanner in = new Scanner(System.in);
+        
+        int[] guess = new int[size];
+        
+        for(int i = 0; i < size; i++)   {
+            System.out.printf("Input guess (Slot: %d): ", i+1);
+            int input = in.nextInt();
+            data[9 - guessNum][i] = String.valueOf(input);
+            guess[i] = input;
+            printInterface(data);
+        }
+        
+        return guess;
+    }
+    
+    public static char[] checkGuesses(int size, int[] guess, int[] code, String[][] data, int guessNum) {
+        char[] hints = new char[size];
+        int count = 0;
+        int[] guessTemp = new int[size];      
+        int[] codeTemp = new int[size];
+        
+        
+        for(int i = 0; i < size; i++)   {
+            hints[i] = '-';
+        }
+        
+        
+        
+        System.out.printf("Code: ");
+        for(int k = 0; k < size; k++)   {
+                System.out.printf("%d, ", code[k]);
+                codeTemp[k] = code[k];
+        }
+        System.out.println("");         
 
-# virtual machine crash logs, see http://www.java.com/en/download/help/error_hotspot.xml
-hs_err_pid*
+        System.out.printf("Guess: ");
+        for(int k = 0; k < size; k++)   {
+                System.out.printf("%d, ", guess[k]);
+                guessTemp = guess;                
+        }
+        System.out.println("");         
+        
+        
+        for(int k = 0; k < size; k++)   {
+            if(guessTemp[k] == codeTemp[k]) {
+                hints[count] = 'B';
+                count++;
+                guessTemp[k] = 0;
+                codeTemp[k] = -1;
+                        
+            }
+        }
+        System.out.printf("Guess: ");
+        for(int k = 0; k < size; k++)   {
+                System.out.printf("%d, ", guessTemp[k]);
+        }
+        System.out.println("");    
+        
+        System.out.printf("Code: ");
+        for(int k = 0; k < size; k++)   {
+                System.out.printf("%d, ", codeTemp[k]);
+        }
+        System.out.println("");         
+        
+        for(int i = 0; i < size; i++)   {
+            for(int k = 0; k < size; k++)   {
+                if(guessTemp[i] == codeTemp[k]) {
+                    hints[count] = 'W';
+                    guessTemp[i] = 0;
+                    count++;
+                break;
+                    //System.out.printf("Number: %d is in the code", code[k]);
+                }
+            }
+        }
+    
+    codeTemp = code;
+        
+     return hints;   
+    }
+    
+    public static boolean printHints(int size, char[] hints, String[][] data, int guessNum)   {
+        boolean won = true;
+        int count = 0;
+      
+        for(int k = 0; k < size; k++)   {
+                data[9-guessNum][k+size] = String.valueOf(hints[k]);
+                if(hints[k] != 'B') {
+                    won = false;                    
+                }
+                count++;
+            }
+            
+        return won;
+    }
+    
+    public static void printInterface(String[][] data)  {
+        System.out.print("\033[H\033[2J");  
+        System.out.flush();  
+
+        
+        System.out.println("         *********************************");
+        
+        for(int i = 0; i < 10; i++) {
+            System.out.printf("Guess %2d ", 10-i);
+            System.out.printf("|");
+            for(int k = 0; k < 8; k++)  {                
+                if(k > 0 && k < 8 && k != 4)   {
+                    System.out.printf("|");
+                }
+                if(k == 4)  {
+                    System.out.printf("|");
+                }
+                System.out.printf(" %s ", data[i][k]);
+            }
+            System.out.printf("|\n"); 
+            if(i != 9)  {
+                System.out.println("         |-------------------------------|");           
+            }
+        }
+                System.out.println("         *********************************");
+        //System.out.println(data[1][2]);
+    }
+    
+    public static void main(String[] args) {
+        int size = 4;
+        int[] code = generateCode(size); //works
+        boolean won = false;
+        String[][] data = new String[10][8];
+        int guessNum = 0;
+        
+        
+        for(int i = 0; i < 10; i++) {            
+            for(int k = 0; k < 8; k++)  {
+                data[i][k] = "-";
+            }
+        }
+        
+        for(int k = 0; k < size; k++)   {
+                System.out.printf("%d, ", code[k]);
+        }
+        System.out.println("");
+        for(int i = 0; i < 10; i++) {
+            printInterface(data);
+            if(won == true)  {
+                System.out.printf("\n\nCONGRATS!!! YOU WON!\n\n");
+                break;
+            }
+            //won = true;
+            int[] guess = makeGuesses(size, data, guessNum);            
+            char[] hints = checkGuesses(size, guess, code, data, guessNum);
+            won = printHints(size, hints, data, guessNum);  
+            guessNum++;
+        }     
+        
+    }
+    
+}
